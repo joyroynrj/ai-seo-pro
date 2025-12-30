@@ -239,18 +239,21 @@ class AI_SEO_Pro_Content_Analyzer {
 		if ( $analysis['keyword_density'] < 0.5 ) {
 			$analysis['recommendations'][] = array(
 				'type'    => 'warning',
-				'message' => sprintf( __( 'Keyword density is low (%.2f%%). Try to include "%s" more naturally in your content.', 'ai-seo-pro' ), $analysis['keyword_density'], $keyword ),
+				/* translators: 1: keyword density percentage, 2: focus keyword */
+				'message' => sprintf( __( 'Keyword density is low (%1$.2f%%). Try to include "%2$s" more naturally in your content.', 'ai-seo-pro' ), $analysis['keyword_density'], $keyword ),
 			);
 		} elseif ( $analysis['keyword_density'] > 2.5 ) {
 			$analysis['recommendations'][] = array(
 				'type'    => 'error',
-				'message' => sprintf( __( 'Keyword density is too high (%.2f%%). This might be seen as keyword stuffing.', 'ai-seo-pro' ), $analysis['keyword_density'] ),
+				/* translators: %s: keyword density percentage */
+				'message' => sprintf( __( 'Keyword density is too high (%s%%). This might be seen as keyword stuffing.', 'ai-seo-pro' ), number_format( $analysis['keyword_density'], 2 ) ),
 			);
 		}
 
 		if ( $analysis['keyword_in_headings'] === 0 ) {
 			$analysis['recommendations'][] = array(
 				'type'    => 'warning',
+				/* translators: %s: focus keyword */
 				'message' => sprintf( __( 'Focus keyword "%s" not found in any headings. Use it in at least one heading.', 'ai-seo-pro' ), $keyword ),
 			);
 		}
@@ -268,6 +271,7 @@ class AI_SEO_Pro_Content_Analyzer {
 		if ( $analysis['word_count'] < 300 ) {
 			$analysis['recommendations'][] = array(
 				'type'    => 'warning',
+				/* translators: %d: word count */
 				'message' => sprintf( __( 'Content is short (%d words). Aim for at least 300 words for better SEO.', 'ai-seo-pro' ), $analysis['word_count'] ),
 			);
 		}
@@ -275,13 +279,15 @@ class AI_SEO_Pro_Content_Analyzer {
 		if ( $analysis['readability_score'] < 60 ) {
 			$analysis['recommendations'][] = array(
 				'type'    => 'info',
-				'message' => sprintf( __( 'Readability score is %.1f. Consider using shorter sentences and simpler words.', 'ai-seo-pro' ), $analysis['readability_score'] ),
+				/* translators: %s: readability score */
+				'message' => sprintf( __( 'Readability score is %s. Consider using shorter sentences and simpler words.', 'ai-seo-pro' ), number_format( $analysis['readability_score'], 1 ) ),
 			);
 		}
 
 		if ( $analysis['image_alt_tags']['without_alt'] > 0 ) {
 			$analysis['recommendations'][] = array(
 				'type'    => 'warning',
+				/* translators: %d: number of images missing alt text */
 				'message' => sprintf( __( '%d image(s) missing alt text. Add descriptive alt text to all images.', 'ai-seo-pro' ), $analysis['image_alt_tags']['without_alt'] ),
 			);
 		}

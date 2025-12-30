@@ -7,14 +7,17 @@
  */
 
 // If uninstall not called from WordPress, then exit.
-if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
+if (!defined('WP_UNINSTALL_PLUGIN')) {
 	exit;
 }
 
 /**
- * Delete plugin options
+ * Delete plugin options.
+ *
+ * @since 1.0.0
  */
-function ai_seo_pro_delete_options() {
+function ai_seo_pro_delete_options()
+{
 	$options = array(
 		'ai_seo_pro_api_provider',
 		'ai_seo_pro_api_key',
@@ -30,18 +33,35 @@ function ai_seo_pro_delete_options() {
 		'ai_seo_pro_title_separator',
 		'ai_seo_pro_homepage_title',
 		'ai_seo_pro_homepage_description',
+		'ai_seo_pro_404_monitoring',
+		'ai_seo_pro_404_retention',
 		'ai_seo_pro_db_version',
+		// Sitemap options
+		'ai_seo_pro_sitemap_enabled',
+		'ai_seo_pro_sitemap_entries_per_page',
+		'ai_seo_pro_sitemap_include_images',
+		'ai_seo_pro_sitemap_include_taxonomies',
+		'ai_seo_pro_sitemap_include_authors',
+		'ai_seo_pro_sitemap_ping_search_engines',
+		'ai_seo_pro_sitemap_post_types',
+		'ai_seo_pro_sitemap_taxonomies',
 	);
 
-	foreach ( $options as $option ) {
-		delete_option( $option );
+	foreach ($options as $option) {
+		delete_option($option);
 	}
 }
 
 /**
- * Delete post meta
+ * Delete post meta using a single optimized query.
+ *
+ * Uses a single DELETE with IN clause instead of multiple queries,
+ * which is more efficient for bulk deletion.
+ *
+ * @since 1.0.0
  */
-function ai_seo_pro_delete_post_meta() {
+function ai_seo_pro_delete_post_meta()
+{
 	global $wpdb;
 
 	$meta_keys = array(
@@ -60,31 +80,65 @@ function ai_seo_pro_delete_post_meta() {
 		'_ai_seo_auto_generate',
 	);
 
-	foreach ( $meta_keys as $meta_key ) {
-		$wpdb->delete(
-			$wpdb->postmeta,
-			array( 'meta_key' => $meta_key ),
-			array( '%s' )
-		);
+	// Build placeholders for prepared statement
+	$placeholders = implode(', ', array_fill(0, count($meta_keys), '%s'));
+
+	// Single optimized query with IN clause
+	// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Uninstall runs once, cleanup is necessary.
+	$wpdb->query(
+		$wpdb->prepare(
+			"DELETE FROM {$wpdb->postmeta} WHERE meta_key IN ({$placeholders})",
+			$meta_keys
+		)
+	);
+}
+
+/**
+ * Delete custom database tables.
+ *
+ * @since 1.0.0
+ */
+function ai_seo_pro_delete_tables()
+{
+	global $wpdb;
+
+	$tables = array(
+		$wpdb->prefix . 'ai_seo_analysis',
+		$wpdb->prefix . 'ai_seo_redirects',
+		$wpdb->prefix . 'ai_seo_404_logs',
+	);
+
+	foreach ($tables as $table) {
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is safely constructed.
+		$wpdb->query("DROP TABLE IF EXISTS {$table}");
 	}
 }
 
 /**
- * Delete custom database tables
+ * Delete transients.
+ *
+ * @since 1.0.0
  */
-function ai_seo_pro_delete_tables() {
+function ai_seo_pro_delete_transients()
+{
 	global $wpdb;
 
-	$table_name = $wpdb->prefix . 'ai_seo_analysis';
-	$wpdb->query( "DROP TABLE IF EXISTS {$table_name}" );
+	// Delete all transients with our prefix
+	// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Uninstall runs once, cleanup is necessary.
+	$wpdb->query(
+		"DELETE FROM {$wpdb->options} 
+		WHERE option_name LIKE '%\_transient\_ai\_seo\_pro\_%' 
+		OR option_name LIKE '%\_transient\_timeout\_ai\_seo\_pro\_%'"
+	);
 }
 
 /**
- * Run uninstall
+ * Run uninstall cleanup.
  */
 ai_seo_pro_delete_options();
 ai_seo_pro_delete_post_meta();
 ai_seo_pro_delete_tables();
+ai_seo_pro_delete_transients();
 
 // Clear any cached data
 wp_cache_flush();

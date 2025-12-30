@@ -51,6 +51,9 @@ class AI_SEO_Pro_Metabox
 
 	/**
 	 * Initialize the class and set its properties.
+	 *
+	 * @param string $plugin_name The name of the plugin.
+	 * @param string $version     The version of the plugin.
 	 */
 	public function __construct($plugin_name, $version)
 	{
@@ -92,14 +95,14 @@ class AI_SEO_Pro_Metabox
 	{
 		wp_nonce_field('ai_seo_pro_metabox', 'ai_seo_pro_nonce');
 
-		// Get existing meta data
+		// Get existing meta data.
 		$meta_data = $this->meta_manager->get_post_meta($post->ID);
 		$seo_score = get_post_meta($post->ID, '_ai_seo_score', true);
 
-		// Get content analysis
+		// Get content analysis.
 		$content_analysis = get_post_meta($post->ID, '_ai_seo_content_analysis', true);
 
-		// Perform SEO analysis
+		// Perform SEO analysis.
 		$seo_analysis = $this->seo_analyzer->analyze(
 			$post->ID,
 			$post->post_content,
@@ -110,10 +113,10 @@ class AI_SEO_Pro_Metabox
 			$post->post_name
 		);
 
-		// Perform Readability analysis
+		// Perform Readability analysis.
 		$readability_analysis = $this->readability_analyzer->analyze($post->post_content);
 
-		// Include the metabox view
+		// Include the metabox view.
 		require_once AI_SEO_PRO_PLUGIN_DIR . 'admin/views/metabox.php';
 	}
 
@@ -160,10 +163,10 @@ class AI_SEO_Pro_Metabox
 	 */
 	public function save_meta_data($post_id, $post)
 	{
-		// Security checks
+		// Security checks.
 		if (
 			!isset($_POST['ai_seo_pro_nonce']) ||
-			!wp_verify_nonce($_POST['ai_seo_pro_nonce'], 'ai_seo_pro_metabox')
+			!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['ai_seo_pro_nonce'])), 'ai_seo_pro_metabox')
 		) {
 			return;
 		}
@@ -176,15 +179,19 @@ class AI_SEO_Pro_Metabox
 			return;
 		}
 
-		// Check if auto-generate is enabled
+		// Check if auto-generate is enabled.
 		$auto_generate = isset($_POST['ai_seo_auto_generate']);
 		update_post_meta($post_id, '_ai_seo_auto_generate', $auto_generate);
 
-		// If auto-generate is enabled and fields are empty, trigger generation
+		// Save Exclude from Sitemap setting.
+		$exclude_sitemap = isset($_POST['ai_seo_exclude_sitemap']) ? '1' : '';
+		update_post_meta($post_id, '_ai_seo_exclude_sitemap', $exclude_sitemap);
+
+		// If auto-generate is enabled and fields are empty, trigger generation.
 		if ($auto_generate && empty($_POST['ai_seo_title'])) {
 			$this->auto_generate_meta($post_id, $post);
 		} else {
-			// Save manual inputs
+			// Save manual inputs.
 			$meta_fields = array(
 				'title' => 'ai_seo_title',
 				'description' => 'ai_seo_description',
@@ -194,39 +201,39 @@ class AI_SEO_Pro_Metabox
 
 			foreach ($meta_fields as $key => $field_name) {
 				if (isset($_POST[$field_name])) {
-					$value = $this->sanitize_meta_field($_POST[$field_name], $key);
+					$value = $this->sanitize_meta_field(wp_unslash($_POST[$field_name]), $key);
 					update_post_meta($post_id, '_' . $field_name, $value);
 				}
 			}
 
-			// Save Open Graph data
+			// Save Open Graph data.
 			if (isset($_POST['ai_seo_og_title'])) {
-				update_post_meta($post_id, '_ai_seo_og_title', sanitize_text_field($_POST['ai_seo_og_title']));
+				update_post_meta($post_id, '_ai_seo_og_title', sanitize_text_field(wp_unslash($_POST['ai_seo_og_title'])));
 			}
 			if (isset($_POST['ai_seo_og_description'])) {
-				update_post_meta($post_id, '_ai_seo_og_description', sanitize_textarea_field($_POST['ai_seo_og_description']));
+				update_post_meta($post_id, '_ai_seo_og_description', sanitize_textarea_field(wp_unslash($_POST['ai_seo_og_description'])));
 			}
 
-			// Save Twitter Card data
+			// Save Twitter Card data.
 			if (isset($_POST['ai_seo_twitter_title'])) {
-				update_post_meta($post_id, '_ai_seo_twitter_title', sanitize_text_field($_POST['ai_seo_twitter_title']));
+				update_post_meta($post_id, '_ai_seo_twitter_title', sanitize_text_field(wp_unslash($_POST['ai_seo_twitter_title'])));
 			}
 			if (isset($_POST['ai_seo_twitter_description'])) {
-				update_post_meta($post_id, '_ai_seo_twitter_description', sanitize_textarea_field($_POST['ai_seo_twitter_description']));
+				update_post_meta($post_id, '_ai_seo_twitter_description', sanitize_textarea_field(wp_unslash($_POST['ai_seo_twitter_description'])));
 			}
 
-			// Save robots meta
+			// Save robots meta.
 			if (isset($_POST['ai_seo_robots'])) {
-				update_post_meta($post_id, '_ai_seo_robots', sanitize_text_field($_POST['ai_seo_robots']));
+				update_post_meta($post_id, '_ai_seo_robots', sanitize_text_field(wp_unslash($_POST['ai_seo_robots'])));
 			}
 
-			// Save canonical URL
+			// Save canonical URL.
 			if (isset($_POST['ai_seo_canonical'])) {
-				update_post_meta($post_id, '_ai_seo_canonical', esc_url_raw($_POST['ai_seo_canonical']));
+				update_post_meta($post_id, '_ai_seo_canonical', esc_url_raw(wp_unslash($_POST['ai_seo_canonical'])));
 			}
 		}
 
-		// Recalculate SEO score
+		// Recalculate SEO score.
 		$this->calculate_and_save_score($post_id);
 	}
 
@@ -240,45 +247,51 @@ class AI_SEO_Pro_Metabox
 		$post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
 		$title = isset($_POST['title']) ? wp_unslash($_POST['title']) : '';
 		$content = isset($_POST['content']) ? wp_unslash($_POST['content']) : '';
-		$focus_keyword = isset($_POST['focus_keyword']) ? sanitize_text_field($_POST['focus_keyword']) : '';
+		$focus_keyword = isset($_POST['focus_keyword']) ? sanitize_text_field(wp_unslash($_POST['focus_keyword'])) : '';
 
-		// Get generation filters
-		$generate_title = isset($_POST['generate_title']) && $_POST['generate_title'] === 'true';
-		$generate_description = isset($_POST['generate_description']) && $_POST['generate_description'] === 'true';
-		$generate_keywords = isset($_POST['generate_keywords']) && $_POST['generate_keywords'] === 'true';
+		// Get generation filters.
+		$generate_title = isset($_POST['generate_title']) && 'true' === $_POST['generate_title'];
+		$generate_description = isset($_POST['generate_description']) && 'true' === $_POST['generate_description'];
+		$generate_keywords = isset($_POST['generate_keywords']) && 'true' === $_POST['generate_keywords'];
 
 		if (!$post_id || !current_user_can('edit_post', $post_id)) {
 			wp_send_json_error(array('message' => __('Permission denied.', 'ai-seo-pro')));
 		}
 
-		// Validate at least one field is selected
+		// Validate at least one field is selected.
 		if (!$generate_title && !$generate_description && !$generate_keywords) {
-			wp_send_json_error(array(
-				'message' => __('Please select at least one field to generate.', 'ai-seo-pro')
-			));
+			wp_send_json_error(
+				array(
+					'message' => __('Please select at least one field to generate.', 'ai-seo-pro'),
+				)
+			);
 		}
 
-		// Get API provider
+		// Get API provider.
 		$api_provider = get_option('ai_seo_pro_api_provider', 'gemini');
 		$api_key = get_option('ai_seo_pro_api_key');
 
 		if (empty($api_key)) {
-			wp_send_json_error(array(
-				'message' => __('API key not configured. Please configure it in settings.', 'ai-seo-pro')
-			));
+			wp_send_json_error(
+				array(
+					'message' => __('API key not configured. Please configure it in settings.', 'ai-seo-pro'),
+				)
+			);
 		}
 
-		// Generate meta tags using AI
+		// Generate meta tags using AI.
 		$api = $this->get_api_instance($api_provider, $api_key);
 		$result = $api->generate_meta_tags($title, $content, $focus_keyword);
 
 		if (is_wp_error($result)) {
-			wp_send_json_error(array(
-				'message' => $result->get_error_message()
-			));
+			wp_send_json_error(
+				array(
+					'message' => $result->get_error_message(),
+				)
+			);
 		}
 
-		// Prepare response with only requested fields
+		// Prepare response with only requested fields.
 		$response_data = array();
 
 		if ($generate_title && !empty($result['title'])) {
@@ -296,7 +309,7 @@ class AI_SEO_Pro_Metabox
 			$response_data['keywords'] = $result['keywords'];
 		}
 
-		// Optional: Update OG tags if title or description was generated
+		// Optional: Update OG tags if title or description was generated.
 		if ($generate_title && !empty($result['og_title'])) {
 			update_post_meta($post_id, '_ai_seo_og_title', $result['og_title']);
 		}
@@ -305,22 +318,28 @@ class AI_SEO_Pro_Metabox
 		}
 
 		$generated_fields = array();
-		if ($generate_title)
+		if ($generate_title) {
 			$generated_fields[] = 'title';
-		if ($generate_description)
+		}
+		if ($generate_description) {
 			$generated_fields[] = 'description';
-		if ($generate_keywords)
+		}
+		if ($generate_keywords) {
 			$generated_fields[] = 'keywords';
+		}
 
 		$message = sprintf(
+			/* translators: %s: comma-separated list of generated field names */
 			__('Successfully generated: %s', 'ai-seo-pro'),
 			implode(', ', $generated_fields)
 		);
 
-		wp_send_json_success(array(
-			'message' => $message,
-			'data' => $response_data,
-		));
+		wp_send_json_success(
+			array(
+				'message' => $message,
+				'data' => $response_data,
+			)
+		);
 	}
 
 	/**
@@ -332,7 +351,7 @@ class AI_SEO_Pro_Metabox
 
 		$post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
 		$content = isset($_POST['content']) ? wp_unslash($_POST['content']) : '';
-		$focus_keyword = isset($_POST['focus_keyword']) ? sanitize_text_field($_POST['focus_keyword']) : '';
+		$focus_keyword = isset($_POST['focus_keyword']) ? sanitize_text_field(wp_unslash($_POST['focus_keyword'])) : '';
 
 		if (!$post_id || !current_user_can('edit_post', $post_id)) {
 			wp_send_json_error(array('message' => __('Permission denied.', 'ai-seo-pro')));
@@ -341,12 +360,14 @@ class AI_SEO_Pro_Metabox
 		$analyzer = new AI_SEO_Pro_Content_Analyzer();
 		$analysis = $analyzer->analyze($content, $focus_keyword);
 
-		// Save analysis results
+		// Save analysis results.
 		update_post_meta($post_id, '_ai_seo_content_analysis', $analysis);
 
-		wp_send_json_success(array(
-			'analysis' => $analysis,
-		));
+		wp_send_json_success(
+			array(
+				'analysis' => $analysis,
+			)
+		);
 	}
 
 	/**
@@ -364,9 +385,11 @@ class AI_SEO_Pro_Metabox
 
 		$score = $this->calculate_and_save_score($post_id);
 
-		wp_send_json_success(array(
-			'score' => $score,
-		));
+		wp_send_json_success(
+			array(
+				'score' => $score,
+			)
+		);
 	}
 
 	/**
@@ -379,16 +402,16 @@ class AI_SEO_Pro_Metabox
 		$post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
 		$content = isset($_POST['content']) ? wp_unslash($_POST['content']) : '';
 		$title = isset($_POST['title']) ? wp_unslash($_POST['title']) : '';
-		$focus_keyword = isset($_POST['focus_keyword']) ? sanitize_text_field($_POST['focus_keyword']) : '';
-		$meta_title = isset($_POST['meta_title']) ? sanitize_text_field($_POST['meta_title']) : '';
-		$meta_description = isset($_POST['meta_description']) ? sanitize_textarea_field($_POST['meta_description']) : '';
-		$slug = isset($_POST['slug']) ? sanitize_text_field($_POST['slug']) : '';
+		$focus_keyword = isset($_POST['focus_keyword']) ? sanitize_text_field(wp_unslash($_POST['focus_keyword'])) : '';
+		$meta_title = isset($_POST['meta_title']) ? sanitize_text_field(wp_unslash($_POST['meta_title'])) : '';
+		$meta_description = isset($_POST['meta_description']) ? sanitize_textarea_field(wp_unslash($_POST['meta_description'])) : '';
+		$slug = isset($_POST['slug']) ? sanitize_text_field(wp_unslash($_POST['slug'])) : '';
 
 		if (!$post_id || !current_user_can('edit_post', $post_id)) {
 			wp_send_json_error(array('message' => __('Permission denied.', 'ai-seo-pro')));
 		}
 
-		// Perform SEO analysis
+		// Perform SEO analysis.
 		$seo_analysis = $this->seo_analyzer->analyze(
 			$post_id,
 			$content,
@@ -399,17 +422,19 @@ class AI_SEO_Pro_Metabox
 			$slug
 		);
 
-		// Perform Readability analysis
+		// Perform Readability analysis.
 		$readability_analysis = $this->readability_analyzer->analyze($content);
 
-		// Calculate SEO score
+		// Calculate SEO score.
 		$seo_score = $this->calculate_score_from_analysis($seo_analysis);
 
-		wp_send_json_success(array(
-			'seo_analysis' => $seo_analysis,
-			'readability_analysis' => $readability_analysis,
-			'seo_score' => $seo_score,
-		));
+		wp_send_json_success(
+			array(
+				'seo_analysis' => $seo_analysis,
+				'readability_analysis' => $readability_analysis,
+				'seo_score' => $seo_score,
+			)
+		);
 	}
 
 	/**
@@ -424,7 +449,7 @@ class AI_SEO_Pro_Metabox
 		$good = isset($analysis['good']) ? count($analysis['good']) : 0;
 		$total = $problems + $good;
 
-		if ($total === 0) {
+		if (0 === $total) {
 			return 0;
 		}
 

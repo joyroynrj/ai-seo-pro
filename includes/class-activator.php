@@ -79,6 +79,15 @@ class AI_SEO_Pro_Activator
 			'homepage_description' => get_bloginfo('description'),
 			'404_monitoring' => true,
 			'404_retention' => 30,
+			// Sitemap options
+			'sitemap_enabled' => true,
+			'sitemap_entries_per_page' => 1000,
+			'sitemap_include_images' => true,
+			'sitemap_include_taxonomies' => true,
+			'sitemap_include_authors' => false,
+			'sitemap_ping_search_engines' => true,
+			'sitemap_post_types' => array(),
+			'sitemap_taxonomies' => array(),
 		);
 
 		foreach ($defaults as $key => $value) {

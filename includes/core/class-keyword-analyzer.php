@@ -155,24 +155,27 @@ class AI_SEO_Pro_Keyword_Analyzer {
 			$recommendations[] = array(
 				'type'    => 'warning',
 				'message' => sprintf(
-					__( 'Keyword density is low (%.2f%%). Try to include the focus keyword more naturally in your content.', 'ai-seo-pro' ),
-					$analysis['density']
+					/* translators: %s: keyword density percentage */
+					__( 'Keyword density is low (%s%%). Try to include the focus keyword more naturally in your content.', 'ai-seo-pro' ),
+					number_format( $analysis['density'], 2 )
 				),
 			);
 		} elseif ( $analysis['density'] > 2.5 ) {
 			$recommendations[] = array(
 				'type'    => 'error',
 				'message' => sprintf(
-					__( 'Keyword density is too high (%.2f%%). This might be considered keyword stuffing.', 'ai-seo-pro' ),
-					$analysis['density']
+					/* translators: %s: keyword density percentage */
+					__( 'Keyword density is too high (%s%%). This might be considered keyword stuffing.', 'ai-seo-pro' ),
+					number_format( $analysis['density'], 2 )
 				),
 			);
 		} else {
 			$recommendations[] = array(
 				'type'    => 'success',
 				'message' => sprintf(
-					__( 'Keyword density is good (%.2f%%).', 'ai-seo-pro' ),
-					$analysis['density']
+					/* translators: %s: keyword density percentage */
+					__( 'Keyword density is good (%s%%).', 'ai-seo-pro' ),
+					number_format( $analysis['density'], 2 )
 				),
 			);
 		}
@@ -187,6 +190,7 @@ class AI_SEO_Pro_Keyword_Analyzer {
 			$recommendations[] = array(
 				'type'    => 'success',
 				'message' => sprintf(
+					/* translators: %d: number of headings containing the keyword */
 					__( 'Focus keyword appears in %d heading(s).', 'ai-seo-pro' ),
 					$analysis['in_headings']
 				),
@@ -226,8 +230,8 @@ class AI_SEO_Pro_Keyword_Analyzer {
 		$words = str_word_count( $text, 1 );
 
 		// Filter out stop words and short words
-		$words = array_filter( $words, function( $word ) use ( $stop_words ) {
-			return strlen( $word ) > 3 && ! in_array( $word, $stop_words );
+		$words = array_filter( $words, function ( $word ) use ( $stop_words ) {
+			return strlen( $word ) > 3 && ! in_array( $word, $stop_words, true );
 		} );
 
 		// Count word frequency

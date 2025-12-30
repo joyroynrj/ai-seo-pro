@@ -553,6 +553,58 @@
 	margin-bottom: 0;
 }
 
+
+/* Sitemap Exclusion Field */
+.sitemap-field {
+	background: #fff8e5;
+	border: 1px solid #f0c36d;
+	border-radius: 6px;
+	padding: 15px;
+	margin-bottom: 15px;
+}
+
+.exclude-sitemap-toggle {
+	margin: 0 !important;
+	cursor: pointer;
+	justify-content: flex-start !important;
+}
+
+.exclude-sitemap-toggle input[type="checkbox"] {
+	width: 18px;
+	height: 18px;
+	margin-right: 8px;
+	cursor: pointer;
+}
+
+.exclude-sitemap-toggle span {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.exclude-sitemap-toggle strong {
+	color: #826200;
+}
+
+.sitemap-field .description {
+	color: #826200;
+	margin-top: 8px;
+}
+
+/* Sitemap field when checked */
+.sitemap-field:has(input:checked) {
+	background: #fef0f0;
+	border-color: #dc3232;
+}
+
+.sitemap-field:has(input:checked) .exclude-sitemap-toggle strong {
+	color: #a00;
+}
+
+.sitemap-field:has(input:checked) .description {
+	color: #a00;
+}
+
 /* ============================================
    Readability Tips
    ============================================ */

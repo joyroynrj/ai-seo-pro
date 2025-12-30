@@ -6,47 +6,44 @@
  * @subpackage AI_SEO_Pro/admin
  * @author     Joy Roy
  */
-class AI_SEO_Pro_Admin
-{
+class AI_SEO_Pro_Admin {
 
 	/**
 	 * The ID of this plugin.
 	 *
-	 * @var      string    $plugin_name
+	 * @var string $plugin_name
 	 */
 	private $plugin_name;
 
 	/**
 	 * The version of this plugin.
 	 *
-	 * @var      string    $version
+	 * @var string $version
 	 */
 	private $version;
 
 	/**
 	 * Initialize the class and set its properties.
 	 *
-	 * @param    string    $plugin_name       The name of this plugin.
-	 * @param    string    $version           The version of this plugin.
+	 * @param string $plugin_name The name of this plugin.
+	 * @param string $version     The version of this plugin.
 	 */
-	public function __construct($plugin_name, $version)
-	{
+	public function __construct( $plugin_name, $version ) {
 		$this->plugin_name = $plugin_name;
-		$this->version = $version;
+		$this->version     = $version;
 	}
 
 	/**
 	 * Register the stylesheets for the admin area.
 	 *
-	 * @param    string    $hook    The current admin page hook.
+	 * @param string $hook The current admin page hook.
 	 */
-	public function enqueue_styles($hook)
-	{
+	public function enqueue_styles( $hook ) {
 
-		// Load on all post edit screens and plugin settings page
+		// Load on all post edit screens and plugin settings page.
 		if (
-			in_array($hook, array('post.php', 'post-new.php')) ||
-			strpos($hook, 'ai-seo-pro') !== false
+			in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ||
+			strpos( $hook, 'ai-seo-pro' ) !== false
 		) {
 
 			wp_enqueue_style(
@@ -70,17 +67,16 @@ class AI_SEO_Pro_Admin
 	/**
 	 * Register the JavaScript for the admin area.
 	 *
-	 * @param    string    $hook    The current admin page hook.
+	 * @param string $hook The current admin page hook.
 	 */
-	public function enqueue_scripts($hook)
-	{
+	public function enqueue_scripts( $hook ) {
 
-		if (in_array($hook, array('post.php', 'post-new.php'))) {
+		if ( in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
 
 			wp_enqueue_script(
 				$this->plugin_name . '-character-counter',
 				AI_SEO_PRO_PLUGIN_URL . 'assets/js/character-counter.js',
-				array('jquery'),
+				array( 'jquery' ),
 				$this->version,
 				true
 			);
@@ -88,7 +84,7 @@ class AI_SEO_Pro_Admin
 			wp_enqueue_script(
 				$this->plugin_name . '-metabox',
 				AI_SEO_PRO_PLUGIN_URL . 'assets/js/metabox.js',
-				array('jquery', $this->plugin_name . '-character-counter'),
+				array( 'jquery', $this->plugin_name . '-character-counter' ),
 				$this->version,
 				true
 			);
@@ -96,48 +92,48 @@ class AI_SEO_Pro_Admin
 			wp_enqueue_script(
 				$this->plugin_name . '-admin',
 				AI_SEO_PRO_PLUGIN_URL . 'assets/js/admin.js',
-				array('jquery', 'wp-util'),
+				array( 'jquery', 'wp-util' ),
 				$this->version,
 				true
 			);
 
-			// FIXED: Properly localize script with all required data
+			// FIXED: Properly localize script with all required data.
 			$post_id = get_the_ID();
 			wp_localize_script(
 				$this->plugin_name . '-metabox',
 				'aiSeoProData',
 				array(
-					'ajaxUrl' => admin_url('admin-ajax.php'),
-					'nonce' => wp_create_nonce('ai_seo_pro_nonce'),
-					'postId' => $post_id ? $post_id : 0,
+					'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+					'nonce'   => wp_create_nonce( 'ai_seo_pro_nonce' ),
+					'postId'  => $post_id ? $post_id : 0,
 					'strings' => array(
-						'generating' => __('Generating...', 'ai-seo-pro'),
-						'analyzing' => __('Analyzing content...', 'ai-seo-pro'),
-						'success' => __('Successfully generated!', 'ai-seo-pro'),
-						'error' => __('An error occurred. Please try again.', 'ai-seo-pro'),
-						'noContent' => __('Please add content first.', 'ai-seo-pro'),
-						'confirmRegenerate' => __('This will replace existing meta tags. Continue?', 'ai-seo-pro'),
+						'generating'        => __( 'Generating...', 'ai-seo-pro' ),
+						'analyzing'         => __( 'Analyzing content...', 'ai-seo-pro' ),
+						'success'           => __( 'Successfully generated!', 'ai-seo-pro' ),
+						'error'             => __( 'An error occurred. Please try again.', 'ai-seo-pro' ),
+						'noContent'         => __( 'Please add content first.', 'ai-seo-pro' ),
+						'confirmRegenerate' => __( 'This will replace existing meta tags. Continue?', 'ai-seo-pro' ),
 					),
 				)
 			);
 		}
 
-		if (strpos($hook, 'ai-seo-pro') !== false) {
+		if ( strpos( $hook, 'ai-seo-pro' ) !== false ) {
 			wp_enqueue_script(
 				$this->plugin_name . '-settings',
 				AI_SEO_PRO_PLUGIN_URL . 'assets/js/settings.js',
-				array('jquery'),
+				array( 'jquery' ),
 				$this->version,
 				true
 			);
 
-			// Localize for settings page too
+			// Localize for settings page too.
 			wp_localize_script(
 				$this->plugin_name . '-settings',
 				'aiSeoProData',
 				array(
-					'ajaxUrl' => admin_url('admin-ajax.php'),
-					'nonce' => wp_create_nonce('ai_seo_pro_nonce'),
+					'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+					'nonce'   => wp_create_nonce( 'ai_seo_pro_nonce' ),
 				)
 			);
 		}
@@ -146,24 +142,17 @@ class AI_SEO_Pro_Admin
 	/**
 	 * Add plugin action links.
 	 *
-	 * @param    array    $links    Existing links.
-	 * @return   array
+	 * @param array $links Existing links.
+	 * @return array
 	 */
-	public function add_action_links($links)
-	{
+	public function add_action_links( $links ) {
 		$settings_link = sprintf(
 			'<a href="%s">%s</a>',
-			admin_url('admin.php?page=ai-seo-pro'),
-			__('Settings', 'ai-seo-pro')
+			admin_url( 'admin.php?page=ai-seo-pro' ),
+			__( 'Settings', 'ai-seo-pro' )
 		);
 
-		// $pro_link = sprintf(
-		// 	'<a href="%s" style="color: #46b450; font-weight: bold;">%s</a>',
-		// 	'https://yourwebsite.com/ai-seo-pro',
-		// 	__( 'Go Pro', 'ai-seo-pro' )
-		// );
-
-		array_unshift($links, $settings_link);
+		array_unshift( $links, $settings_link );
 
 		return $links;
 	}
@@ -171,29 +160,30 @@ class AI_SEO_Pro_Admin
 	/**
 	 * Show admin notices.
 	 */
-	public function show_admin_notices()
-	{
-		// Check if API key is configured
-		$api_key = get_option('ai_seo_pro_api_key');
+	public function show_admin_notices() {
+		// Check if API key is configured.
+		$api_key = get_option( 'ai_seo_pro_api_key' );
 
-		if (empty($api_key) && current_user_can('manage_options')) {
+		if ( empty( $api_key ) && current_user_can( 'manage_options' ) ) {
 			$this->render_notice(
 				sprintf(
-					__('AI SEO Pro requires an API key to function. <a href="%s">Configure it now</a>.', 'ai-seo-pro'),
-					admin_url('admin.php?page=ai-seo-pro&tab=api')
+					/* translators: %s: URL to the API settings page */
+					__( 'AI SEO Pro requires an API key to function. <a href="%s">Configure it now</a>.', 'ai-seo-pro' ),
+					admin_url( 'admin.php?page=ai-seo-pro&tab=api' )
 				),
 				'warning'
 			);
 		}
 
-		// Show activation notice
-		if (get_transient('ai_seo_pro_activation_redirect')) {
-			delete_transient('ai_seo_pro_activation_redirect');
+		// Show activation notice.
+		if ( get_transient( 'ai_seo_pro_activation_redirect' ) ) {
+			delete_transient( 'ai_seo_pro_activation_redirect' );
 
 			$this->render_notice(
 				sprintf(
-					__('Thank you for installing AI SEO Pro! <a href="%s">Get started</a> by configuring your settings.', 'ai-seo-pro'),
-					admin_url('admin.php?page=ai-seo-pro')
+					/* translators: %s: URL to the plugin settings page */
+					__( 'Thank you for installing AI SEO Pro! <a href="%s">Get started</a> by configuring your settings.', 'ai-seo-pro' ),
+					admin_url( 'admin.php?page=ai-seo-pro' )
 				),
 				'success',
 				true
@@ -204,52 +194,51 @@ class AI_SEO_Pro_Admin
 	/**
 	 * Render admin notice.
 	 *
-	 * @param    string    $message    The notice message.
-	 * @param    string    $type       Notice type (success, error, warning, info).
-	 * @param    bool      $dismissible Whether the notice is dismissible.
+	 * @param string $message     The notice message.
+	 * @param string $type        Notice type (success, error, warning, info).
+	 * @param bool   $dismissible Whether the notice is dismissible.
 	 */
-	private function render_notice($message, $type = 'info', $dismissible = false)
-	{
+	private function render_notice( $message, $type = 'info', $dismissible = false ) {
 		$class = 'notice notice-' . $type;
-		if ($dismissible) {
+		if ( $dismissible ) {
 			$class .= ' is-dismissible';
 		}
 
 		printf(
 			'<div class="%1$s"><p>%2$s</p></div>',
-			esc_attr($class),
-			wp_kses_post($message)
+			esc_attr( $class ),
+			wp_kses_post( $message )
 		);
 	}
 
 	/**
 	 * Check for conflicting plugins.
 	 *
-	 * @return   bool    True if conflicts detected.
+	 * @return bool True if conflicts detected.
 	 */
-	private function check_plugin_conflicts()
-	{
+	private function check_plugin_conflicts() {
 		$conflicting_plugins = array(
-			'wordpress-seo/wp-seo.php' => 'Yoast SEO',
+			'wordpress-seo/wp-seo.php'                    => 'Yoast SEO',
 			'all-in-one-seo-pack/all_in_one_seo_pack.php' => 'All in One SEO',
-			'seo-by-rank-math/rank-math.php' => 'Rank Math',
-			'autodescription/autodescription.php' => 'The SEO Framework',
+			'seo-by-rank-math/rank-math.php'              => 'Rank Math',
+			'autodescription/autodescription.php'         => 'The SEO Framework',
 		);
 
-		$active_plugins = get_option('active_plugins');
-		$conflicts = array();
+		$active_plugins = get_option( 'active_plugins' );
+		$conflicts      = array();
 
-		foreach ($conflicting_plugins as $plugin => $name) {
-			if (in_array($plugin, $active_plugins)) {
+		foreach ( $conflicting_plugins as $plugin => $name ) {
+			if ( in_array( $plugin, $active_plugins, true ) ) {
 				$conflicts[] = $name;
 			}
 		}
 
-		if (!empty($conflicts)) {
+		if ( ! empty( $conflicts ) ) {
 			$this->render_notice(
 				sprintf(
-					__('AI SEO Pro has detected conflicting SEO plugins: %s. For best results, please deactivate them.', 'ai-seo-pro'),
-					implode(', ', $conflicts)
+					/* translators: %s: comma-separated list of conflicting plugin names */
+					__( 'AI SEO Pro has detected conflicting SEO plugins: %s. For best results, please deactivate them.', 'ai-seo-pro' ),
+					implode( ', ', $conflicts )
 				),
 				'warning',
 				true

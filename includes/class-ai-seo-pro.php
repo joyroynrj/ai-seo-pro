@@ -88,6 +88,9 @@ class AI_SEO_Pro
 		// Public classes
 		require_once AI_SEO_PRO_PLUGIN_DIR . 'public/class-public.php';
 
+		// In ai-seo-pro.php, after loading the main class
+		require_once AI_SEO_PRO_PLUGIN_DIR . 'includes/sitemap/class-sitemap-loader.php';
+
 		$this->loader = new AI_SEO_Pro_Loader();
 	}
 

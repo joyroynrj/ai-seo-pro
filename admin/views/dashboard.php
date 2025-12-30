@@ -6,13 +6,13 @@
  * @subpackage AI_SEO_Pro/admin/views
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// Get statistics
+// Get statistics.
 global $wpdb;
-$total_posts = wp_count_posts();
+$total_posts    = wp_count_posts();
 $posts_with_meta = $wpdb->get_var(
 	"SELECT COUNT(DISTINCT post_id) FROM {$wpdb->postmeta} WHERE meta_key = '_ai_seo_title'"
 );
@@ -30,83 +30,89 @@ $avg_score = $wpdb->get_var(
 				<div class="stat-card">
 					<div class="stat-icon">📝</div>
 					<div class="stat-content">
-						<h3><?php echo number_format($total_posts->publish); ?></h3>
-						<p><?php _e('Published Posts', 'ai-seo-pro'); ?></p>
+						<h3><?php echo esc_html( number_format( $total_posts->publish ) ); ?></h3>
+						<p><?php esc_html_e( 'Published Posts', 'ai-seo-pro' ); ?></p>
 					</div>
 				</div>
 
 				<div class="stat-card">
 					<div class="stat-icon">✅</div>
 					<div class="stat-content">
-						<h3><?php echo number_format($posts_with_meta); ?></h3>
-						<p><?php _e('Optimized Posts', 'ai-seo-pro'); ?></p>
+						<h3><?php echo esc_html( number_format( $posts_with_meta ) ); ?></h3>
+						<p><?php esc_html_e( 'Optimized Posts', 'ai-seo-pro' ); ?></p>
 					</div>
 				</div>
 
 				<div class="stat-card">
 					<div class="stat-icon">📊</div>
 					<div class="stat-content">
-						<h3><?php echo round($avg_score); ?>/100</h3>
-						<p><?php _e('Average SEO Score', 'ai-seo-pro'); ?></p>
+						<h3><?php echo esc_html( round( $avg_score ) ); ?>/100</h3>
+						<p><?php esc_html_e( 'Average SEO Score', 'ai-seo-pro' ); ?></p>
 					</div>
 				</div>
 
 				<div class="stat-card">
 					<div class="stat-icon">🤖</div>
 					<div class="stat-content">
-						<h3><?php echo AI_SEO_Pro_Helper::get_provider_name(get_option('ai_seo_pro_api_provider', 'gemini')); ?>
+						<h3><?php echo esc_html( AI_SEO_Pro_Helper::get_provider_name( get_option( 'ai_seo_pro_api_provider', 'gemini' ) ) ); ?>
 						</h3>
-						<p><?php _e('AI Provider', 'ai-seo-pro'); ?></p>
+						<p><?php esc_html_e( 'AI Provider', 'ai-seo-pro' ); ?></p>
 					</div>
 				</div>
 			</div>
 
 			<div class="recent-activity">
-				<h2><?php _e('Recent Posts', 'ai-seo-pro'); ?></h2>
+				<h2><?php esc_html_e( 'Recent Posts', 'ai-seo-pro' ); ?></h2>
 
 				<?php
-				$recent_posts = get_posts(array(
-					'numberposts' => 10,
-					'post_status' => 'publish',
-				));
+				$recent_posts = get_posts(
+					array(
+						'numberposts' => 10,
+						'post_status' => 'publish',
+					)
+				);
 
-				if ($recent_posts):
+				if ( $recent_posts ) :
 					?>
 					<table class="wp-list-table widefat fixed striped">
 						<thead>
 							<tr>
-								<th><?php _e('Title', 'ai-seo-pro'); ?></th>
-								<th><?php _e('SEO Score', 'ai-seo-pro'); ?></th>
-								<th><?php _e('Meta Title', 'ai-seo-pro'); ?></th>
-								<th><?php _e('Actions', 'ai-seo-pro'); ?></th>
+								<th><?php esc_html_e( 'Title', 'ai-seo-pro' ); ?></th>
+								<th><?php esc_html_e( 'SEO Score', 'ai-seo-pro' ); ?></th>
+								<th><?php esc_html_e( 'Meta Title', 'ai-seo-pro' ); ?></th>
+								<th><?php esc_html_e( 'Actions', 'ai-seo-pro' ); ?></th>
 							</tr>
 						</thead>
 						<tbody>
-							<?php foreach ($recent_posts as $post):
-								$score = get_post_meta($post->ID, '_ai_seo_score', true);
-								$meta_title = get_post_meta($post->ID, '_ai_seo_title', true);
+							<?php
+							foreach ( $recent_posts as $post ) :
+								$score      = get_post_meta( $post->ID, '_ai_seo_score', true );
+								$meta_title = get_post_meta( $post->ID, '_ai_seo_title', true );
 								?>
 								<tr>
 									<td>
-										<strong><?php echo esc_html($post->post_title); ?></strong>
+										<strong><?php echo esc_html( $post->post_title ); ?></strong>
 									</td>
 									<td>
-										<?php echo AI_SEO_Pro_Helper::format_score($score ? $score : 0); ?>
+										<?php
+										// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- AI_SEO_Pro_Helper::format_score() returns safely escaped HTML.
+										echo AI_SEO_Pro_Helper::format_score( $score ? $score : 0 );
+										?>
 									</td>
 									<td>
 										<?php echo $meta_title ? '✓' : '✗'; ?>
 									</td>
 									<td>
-										<a href="<?php echo get_edit_post_link($post->ID); ?>" class="button button-small">
-											<?php _e('Edit', 'ai-seo-pro'); ?>
+										<a href="<?php echo esc_url( get_edit_post_link( $post->ID ) ); ?>" class="button button-small">
+											<?php esc_html_e( 'Edit', 'ai-seo-pro' ); ?>
 										</a>
 									</td>
 								</tr>
 							<?php endforeach; ?>
 						</tbody>
 					</table>
-				<?php else: ?>
-					<p><?php _e('No posts found.', 'ai-seo-pro'); ?></p>
+				<?php else : ?>
+					<p><?php esc_html_e( 'No posts found.', 'ai-seo-pro' ); ?></p>
 				<?php endif; ?>
 			</div>
 		</div>
